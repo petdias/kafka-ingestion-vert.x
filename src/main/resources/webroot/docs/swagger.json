@@ -1,0 +1,250 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "This is IIC Ingestion API documentation. Before using, please make sure you are pointing to the right hostname for your current environment. Currently, there are three environments supported: <br/> DEV : http://iic.paas.isbanbr.dev.corp/iic-ingestion; PRE/HK : https://iic.paas.santanderbr.pre.corp/iic-ingestion; PRO : https://cok.santader.com.br/iic-ingestion.",
+    "version": "2.0.14",
+    "title": "Integrador de Interações do Cliente - IIC"
+  },
+  "host": "cok.santader.com.br",
+  "basePath": "/iic-ingestion",
+  "tags": [
+    {
+      "name": "hit",
+      "description": "Send a new hit to Cookie Pool"
+    }
+  ],
+  "schemes": [
+    "https"
+  ],
+  "paths": {
+    "/hit": {
+      "post": {
+        "tags": [
+          "hit"
+        ],
+        "summary": "Send a new hit to Cookie Pool",
+        "description": "",
+        "operationId": "postHit",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Hit object that needs to be sent to IIC",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Hit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "type": "object",
+              "example": {
+                "status": "OK"
+              },
+              "$ref": "#/definitions/ApiResponse"
+            }
+          },
+          "422": {
+            "description": "Invalid input",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/ApiErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Returns the current status of the running application",
+        "operationId": "getHealth",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Application up and running",
+            "schema": {
+              "type": "object",
+              "items": {
+                "$ref": "#/definitions/Health"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/check": {
+      "get": {
+        "tags": [
+          "check"
+        ],
+        "summary": "Returns the current status of the application dependencies",
+        "operationId": "checkStatus",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Result follows",
+            "schema": {
+              "type": "object",
+              "items": {
+                "$ref": "#/definitions/Check"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Hit": {
+      "type": "object",
+      "required": [
+        "type",
+        "screen",
+        "context",
+        "category",
+        "channelId"
+      ],
+      "properties": {
+        "channelId": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "example": "page-view"
+        },
+        "screen": {
+          "type": "string",
+          "example": "https://portal.santander.com.br/"
+        },
+        "lastScreen": {
+          "type": "string"
+        },
+        "context": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "pageTitle": {
+          "type": "string"
+        },
+        "session": {
+          "$ref": "#/definitions/Session"
+        },
+        "user": {
+          "$ref": "#/definitions/User"
+        },
+        "data": {
+          "type": "object"
+        },
+        "windowWidth": {
+          "type": "integer"
+        },
+        "windowHeight": {
+          "type": "integer"
+        },
+        "createdAt": {
+          "type": "string",
+          "example": "2018-06-07T18:37:43.936Z"
+        },
+        "deviceOtherIds": {
+          "type": "object",
+          "description": "Any other id that "
+        }
+      }
+    },
+    "Session": {
+      "type": "object",
+      "properties": {
+        "referal": {
+          "type": "string"
+        },
+        "lat": {
+          "type": "string"
+        },
+        "lon": {
+          "type": "string"
+        }
+      }
+    },
+    "User": {
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string"
+        }
+      }
+    },
+    "ApiResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "example": "OK"
+        }
+      }
+    },
+    "ApiErrorResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "example": "error"
+        },
+        "cause": {
+          "type": "string"
+        }
+      }
+    },
+    "Health": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "example": "OK"
+        },
+        "version": {
+          "type": "string",
+          "example": "2.0.13"
+        },
+        "type\"": {
+          "type": "string",
+          "example": "RELEASE"
+        },
+        "buildTimestamp": {
+          "type": "string",
+          "example": "20/06/2018 04:18:33"
+        }
+      }
+    },
+    "Check": {
+      "type": "object",
+      "properties": {
+        "mongo": {
+          "type": "boolean",
+          "example": "true"
+        },
+        "cassandra": {
+          "type": "boolean",
+          "example": "true"
+        }
+      }
+    }
+  }
+}
