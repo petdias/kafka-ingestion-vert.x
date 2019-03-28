@@ -14,6 +14,7 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.common.protocol.types.Field;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.util.*;
@@ -32,7 +33,7 @@ public class EventVerticle extends AbstractVerticle {
 
     private List<String> users;
 
-    private List<String> channels = Arrays.asList("TST8000", "SWS8001", "ESF8002");
+    private List<String> channels;
 
     private List<String> urls = Arrays.asList("cartoes", "portal", "portal_pj", "amigo_de_valor", "ib", "carrinho", "ofertas", "emprestimo", "profile", "consorcio", "reneg", "home");
 
@@ -81,21 +82,29 @@ public class EventVerticle extends AbstractVerticle {
     };
 
     private Single<JsonObject> produceHit(final Config config) {
-        Integer count = 1;
+        this.channels = getChannels(config);
+        String msg = "";
+        if (!channels.isEmpty()) {
+            Integer count = 1;
+            while (count <= config.getAmountMessages()) {
 
-        while (count <= config.getAmountMessages()) {
+                final JsonObject h = JsonObject.mapFrom(getHit());
+                final ProducerRecord<String, String> record = new ProducerRecord<>("timeline", h.encode());
 
-            final JsonObject h = JsonObject.mapFrom(getHit());
-            final ProducerRecord<String, String> record = new ProducerRecord<>("timeline", h.encode());
+                final RecordMetadata meta = await(this.kafkaProducer.send(record));
+                if (Objects.nonNull(meta) && !meta.hasTimestamp())
+                    log.warning("No timestamp generated to hit sent.");
 
-            final RecordMetadata meta = await(this.kafkaProducer.send(record));
-            if (Objects.nonNull(meta) && !meta.hasTimestamp())
-                log.warning("No timestamp generated to hit sent.");
+                count++;
+            }
 
-            count++;
+            msg = "Mensagens criadas com sucesso!";
+        } else {
+            msg = "É preciso ter pelo menos um canal selecionado!";
         }
 
-        return Single.just(new JsonObject().put("0", "mensagens criadas com sucesso!"));
+
+        return Single.just(new JsonObject().put("0", msg));
     }
 
     private <T> T await(Future<T> future) {
@@ -110,16 +119,44 @@ public class EventVerticle extends AbstractVerticle {
 
     private JsonObject getHit() {
         shuffleCollections();
+        String user = users.get(0);
 
         JsonObject hit = new JsonObject();
         hit.put("hit_type", hitTypes.get(0));
         hit.put("channel",  channels.get(0));
         hit.put("dvc_type", devices.get(0));
         hit.put("hit_screen",  "https://www.santander.com.br/".concat(urls.get(0)));
-        hit.put("uid",  users.get(0));
+        hit.put("uid", user);
         hit.put("sid",  getRandom());
         hit.put("did",  getRandom());
+        hit.put("hid",  getRandom());
         hit.put("hit_pagetitle",  "Santander");
+        hit.put("ssn_appversion", "");
+        hit.put("ssn_apptype", "");
+        hit.put("ssn_lang", "");
+        hit.put("ssn_lat", "");
+        hit.put("hit_createdat", "2018-10-09T18:02:39.824Z");
+        hit.put("hit_category", "/");
+        hit.put("hit_lastscreen", "none");
+        hit.put("hit_context", "/");
+        hit.put("hit_data", "");
+        hit.put("dvc_otherids", "");
+        hit.put("hit_iscompliable", false);
+        hit.put("ssn_referal", "");
+        hit.put("ssn_useragent", "PostmanRuntime/7.3.0");
+        hit.put("hit_windowheight", "647");
+        hit.put("hit_action", "");
+        hit.put("hit_type", "page-view");
+        hit.put("hit_pagetitle", "Santander");
+        hit.put("ssn_ip", "10.79.12.1");
+        hit.put("ssn_lon", "");
+        hit.put("hit_windowwidth", "777");
+        hit.put("hit_label", "");
+        hit.put("hit_conTEXT", "");
+        hit.put("hit_savedat", "");
+        hit.put("hit_savedat_hour", "");
+        hit.put("hit_savedat_minute", "");
+        hit.put("user", user);
 
         return hit;
     }
@@ -162,5 +199,23 @@ public class EventVerticle extends AbstractVerticle {
     private Integer getRandom() {
         Random r = new Random();
         return r.nextInt(1000000000);
+    }
+
+    private List<String> getChannels(Config config) {
+        List<String> channels = new ArrayList<>();
+
+        if (config.getWpc()) {
+            channels.add("SWS8001");
+        }
+
+        if (config.getTst()) {
+            channels.add("TST8000");
+        }
+
+        if (config.getEsf()) {
+            channels.add("ESF8002");
+        }
+
+        return channels;
     }
  }
