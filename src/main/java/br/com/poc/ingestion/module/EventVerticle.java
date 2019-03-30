@@ -146,13 +146,10 @@ public class EventVerticle extends AbstractVerticle {
         hit.put("ssn_useragent", "PostmanRuntime/7.3.0");
         hit.put("hit_windowheight", "647");
         hit.put("hit_action", "");
-        hit.put("hit_type", "page-view");
-        hit.put("hit_pagetitle", "Santander");
         hit.put("ssn_ip", "10.79.12.1");
         hit.put("ssn_lon", "");
         hit.put("hit_windowwidth", "777");
         hit.put("hit_label", "");
-        hit.put("hit_conTEXT", "");
         hit.put("hit_savedat", "");
         hit.put("hit_savedat_hour", "");
         hit.put("hit_savedat_minute", "");

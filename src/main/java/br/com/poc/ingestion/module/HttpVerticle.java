@@ -4,6 +4,7 @@ import br.com.poc.ingestion.domain.MessageType;
 import br.com.poc.ingestion.util.StringUtil;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.AbstractVerticle;
 import io.vertx.reactivex.core.eventbus.EventBus;
@@ -12,7 +13,10 @@ import io.vertx.reactivex.core.http.HttpServerResponse;
 import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
 import io.vertx.reactivex.ext.web.handler.BodyHandler;
+import io.vertx.reactivex.ext.web.handler.CorsHandler;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import static java.util.Objects.nonNull;
@@ -71,10 +75,18 @@ public class HttpVerticle extends AbstractVerticle {
 
     private Router createRoutes() {
         final Router apiRouter = Router.router(vertx);
+        apiRouter.route().handler(this.createCorsHandler());
         apiRouter.route("/config*").handler(BodyHandler.create());
         apiRouter.post("/config").blockingHandler(this.hit()).produces("application/json");
+        apiRouter.get("/check").handler(test()).produces("application/json");
 
         return apiRouter;
+    }
+
+    public static Handler<RoutingContext> test() {
+        return (ctx) -> {
+            ok(ctx.response(), (new JsonObject()).put("status", "UP").encode());
+        };
     }
 
     private Handler<RoutingContext> hit() {
@@ -108,5 +120,25 @@ public class HttpVerticle extends AbstractVerticle {
         } else {
             return StringUtil.isNotEmpty(hostname) && StringUtil.isNotEmpty(host) ? hostname : "127.0.0.1";
         }
+    }
+
+    /**
+     * CORS settings
+     *
+     * @return CorsHandler
+     */
+    private CorsHandler createCorsHandler() {
+        final Set<String> headers = new HashSet<>();
+        headers.add("Accept");
+        headers.add("Accept-Encoding");
+        headers.add("Content-Type");
+        headers.add("X-CRED");
+        headers.add("User-Agent");
+
+        return CorsHandler.create("*").allowedHeaders(headers)
+                .allowedMethod(HttpMethod.HEAD)
+                .allowedMethod(HttpMethod.GET)
+                .allowedMethod(HttpMethod.POST)
+                .allowedMethod(HttpMethod.OPTIONS);
     }
 }
