@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>br.com.poc</groupId>
     <artifactId>ingestion</artifactId>
-    <version>1.0.1-RELEASE</version>
+    <version>1.0.3-RELEASE</version>
 
     <properties>
         <maven.build.timestamp.format>dd/MM/yyyy HH:mm:ss</maven.build.timestamp.format>

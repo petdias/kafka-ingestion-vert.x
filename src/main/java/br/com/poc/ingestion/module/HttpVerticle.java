@@ -76,7 +76,6 @@ public class HttpVerticle extends AbstractVerticle {
     private Router createRoutes() {
         final Router apiRouter = Router.router(vertx);
         apiRouter.route().handler(this.createCorsHandler());
-        apiRouter.route("/config*").handler(BodyHandler.create());
         apiRouter.post("/config").blockingHandler(this.hit()).produces("application/json");
         apiRouter.get("/check").handler(test()).produces("application/json");
 

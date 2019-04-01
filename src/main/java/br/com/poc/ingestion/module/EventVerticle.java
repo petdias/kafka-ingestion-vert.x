@@ -102,8 +102,6 @@ public class EventVerticle extends AbstractVerticle {
         } else {
             msg = "É preciso ter pelo menos um canal selecionado!";
         }
-
-
         return Single.just(new JsonObject().put("0", msg));
     }
 
